@@ -58,9 +58,6 @@ walk:
 }
 
 // Del deletes a node.
-//
-// If a parent node that holds no value ends up holding only one edge
-// after a deletion of one of its edges, it gets merged with the remaining edge.
 func (t *Tree) Del(s string) {
 	tnode := t.root
 
