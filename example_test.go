@@ -2,6 +2,7 @@ package patricia_test
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/gbrlsnchs/patricia"
 )
@@ -22,4 +23,33 @@ func Example() {
 
 	fmt.Println(n.Value)
 	// Output: 2
+}
+
+func ExampleTree_Safe() {
+	list := []string{
+		"romane",
+		"romanus",
+		"romulus",
+		"rubens",
+		"ruber",
+		"rubicon",
+		"rubicundus",
+	}
+	tree := patricia.New("TestRace")
+	tree.Safe = true
+
+	for i, n := range list {
+		go func(i int, n string) {
+			tree.Add(n, i)
+			time.Sleep(time.Second * 3)
+		}(i+1, n)
+	}
+
+	for _, n := range list {
+		go func(n string) {
+			_ = tree.Get(n)
+
+			time.Sleep(time.Second * 3)
+		}(n)
+	}
 }

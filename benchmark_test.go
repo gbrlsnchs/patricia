@@ -11,7 +11,7 @@ func BenchmarkLongString(b *testing.B) {
 
 	t := New("BenchmarkLongString")
 
-	t.Add("This is a very, very long string, so let's benchmark it.", nil)
+	t.Add("This is a very, very long string, so let's benchmark it.", "foo")
 
 	for i := 0; i < b.N; i++ {
 		_ = t.Get("This is a very, very long string, so let's benchmark it.")

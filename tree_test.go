@@ -3,6 +3,7 @@ package patricia_test
 import (
 	"strconv"
 	"testing"
+	"time"
 
 	. "github.com/gbrlsnchs/patricia"
 
@@ -32,8 +33,8 @@ func TestNew(t *testing.T) {
 		{
 			tree:         New("#1"),
 			str:          "test",
-			expected:     true,
-			expectedSize: 33,
+			expected:     false,
+			expectedSize: 1,
 			handlerFunc: func(t *Tree) {
 				t.Add("test", nil)
 			},
@@ -97,6 +98,31 @@ func TestNew(t *testing.T) {
 				t.Add("水", "bar")
 			},
 		},
+		// #7
+		{
+			tree:         New("#7"),
+			str:          "testing",
+			expected:     false,
+			expectedSize: 33,
+			handlerFunc: func(t *Tree) {
+				t.Add("test", "foo")
+				t.Add("testing", "bar")
+				t.Del("testing")
+			},
+		},
+		// #8
+		{
+			tree:          New("#8"),
+			str:           "test",
+			expected:      true,
+			expectedSize:  33,
+			expectedValue: "foo",
+			handlerFunc: func(t *Tree) {
+				t.Add("test", "foo")
+				t.Add("testing", "bar")
+				t.Del("testing")
+			},
+		},
 	}
 
 	for i, test := range tests {
@@ -116,5 +142,33 @@ func TestNew(t *testing.T) {
 			a.Exactly(test.expectedValue, n.Value, index)
 			t.Logf("n.Value = %#v\n", n.Value)
 		}
+	}
+}
+
+func TestRace(t *testing.T) {
+	list := []string{
+		"foo",
+		"bar",
+		"foobar",
+		"foobarbaz",
+		"qux",
+		"barbazqux",
+	}
+	tree := New("TestRace")
+	tree.Safe = true
+
+	for i, n := range list {
+		go func(i int, n string) {
+			tree.Add(n, i)
+			time.Sleep(time.Second * 3)
+		}(i, n)
+	}
+
+	for _, n := range list {
+		go func(n string) {
+			_ = tree.Get(n)
+
+			time.Sleep(time.Second * 3)
+		}(n)
 	}
 }
