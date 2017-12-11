@@ -2,6 +2,7 @@ package patricia_test
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/gbrlsnchs/patricia"
 )
@@ -17,29 +18,6 @@ func Example() {
 	t.Add("ruber", 5)
 	t.Add("rubicon", 6)
 	t.Add("rubicundus", 7)
-	t.Sort(patricia.AscLabelSort)
-
-	err := t.Debug()
-
-	if err != nil {
-		// ...
-	}
-
-	t.Sort(patricia.DescLabelSort)
-
-	err = t.Debug()
-
-	if err != nil {
-		// ...
-	}
-
-	t.Sort(patricia.PrioritySort)
-
-	err = t.Debug()
-
-	if err != nil {
-		// ...
-	}
 
 	n := t.Get("romanus")
 
@@ -47,22 +25,31 @@ func Example() {
 	// Output: 2
 }
 
-func Example_named() {
-	t := patricia.New("Named Edge Example")
+func ExampleTree_Safe() {
+	list := []string{
+		"romane",
+		"romanus",
+		"romulus",
+		"rubens",
+		"ruber",
+		"rubicon",
+		"rubicundus",
+	}
+	tree := patricia.New("TestRace")
+	tree.Safe = true
 
-	t.Add("foo@bar!@baz", nil)
-
-	err := t.Debug()
-
-	if err != nil {
-		// ...
+	for i, n := range list {
+		go func(i int, n string) {
+			tree.Add(n, i)
+			time.Sleep(time.Second * 3)
+		}(i+1, n)
 	}
 
-	_, params := t.GetByRune("foo123!456", '@', '!')
+	for _, n := range list {
+		go func(n string) {
+			_ = tree.Get(n)
 
-	fmt.Println(params["bar"])
-	fmt.Println(params["baz"])
-	// Output:
-	// 123
-	// 456
+			time.Sleep(time.Second * 3)
+		}(n)
+	}
 }

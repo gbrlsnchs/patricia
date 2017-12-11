@@ -3,6 +3,7 @@ package patricia_test
 import (
 	"strconv"
 	"testing"
+	"time"
 
 	. "github.com/gbrlsnchs/patricia"
 
@@ -32,8 +33,8 @@ func TestNew(t *testing.T) {
 		{
 			tree:         New("#1"),
 			str:          "test",
-			expected:     true,
-			expectedSize: 2,
+			expected:     false,
+			expectedSize: 1,
 			handlerFunc: func(t *Tree) {
 				t.Add("test", nil)
 			},
@@ -43,19 +44,20 @@ func TestNew(t *testing.T) {
 			tree:          New("#2"),
 			str:           "test",
 			expected:      true,
-			expectedSize:  2,
+			expectedSize:  57,
 			expectedValue: "foo",
 			handlerFunc: func(t *Tree) {
 				t.Add("test", "foo")
+				t.Add("testing", "bar")
 			},
 		},
 		// #3
 		{
 			tree:          New("#3"),
-			str:           "test",
+			str:           "testing",
 			expected:      true,
-			expectedSize:  3,
-			expectedValue: "foo",
+			expectedSize:  57,
+			expectedValue: "bar",
 			handlerFunc: func(t *Tree) {
 				t.Add("test", "foo")
 				t.Add("testing", "bar")
@@ -64,9 +66,9 @@ func TestNew(t *testing.T) {
 		// #4
 		{
 			tree:          New("#4"),
-			str:           "testing",
-			expected:      true,
-			expectedSize:  3,
+			str:           "tester",
+			expected:      false,
+			expectedSize:  57,
 			expectedValue: "bar",
 			handlerFunc: func(t *Tree) {
 				t.Add("test", "foo")
@@ -75,215 +77,50 @@ func TestNew(t *testing.T) {
 		},
 		// #5
 		{
-			tree:           New("#5"),
-			str:            "test:foo",
-			ph:             '@',
-			expected:       true,
-			expectedSize:   2,
-			expectedParams: map[string]string{"param": "foo"},
+			tree:          New("#5"),
+			str:           "火",
+			expected:      true,
+			expectedSize:  25,
+			expectedValue: "foo",
 			handlerFunc: func(t *Tree) {
-				t.Add("test:@param", nil)
+				t.Add("火", "foo")
 			},
 		},
 		// #6
 		{
-			tree:           New("#6"),
-			str:            "test:foo",
-			ph:             '@',
-			expected:       true,
-			expectedSize:   2,
-			expectedValue:  "foobar",
-			expectedParams: map[string]string{"param": "foo"},
+			tree:          New("#6"),
+			str:           "火",
+			expected:      true,
+			expectedSize:  42,
+			expectedValue: "foo",
 			handlerFunc: func(t *Tree) {
-				t.Add("test:@param", "foobar")
+				t.Add("火", "foo")
+				t.Add("水", "bar")
 			},
 		},
 		// #7
 		{
-			tree:           New("#7"),
-			str:            "test:foo:bar",
-			ph:             '@',
-			delim:          ':',
-			expected:       true,
-			expectedSize:   2,
-			expectedValue:  "foobar",
-			expectedParams: map[string]string{"param1": "foo", "param2": "bar"},
+			tree:         New("#7"),
+			str:          "testing",
+			expected:     false,
+			expectedSize: 33,
 			handlerFunc: func(t *Tree) {
-				t.Add("test:@param1:@param2", "foobar")
+				t.Add("test", "foo")
+				t.Add("testing", "bar")
+				t.Del("testing")
 			},
 		},
 		// #8
 		{
-			tree:           New("#8"),
-			str:            "test:foo:bar",
-			ph:             '@',
-			delim:          ':',
-			expected:       true,
-			expectedSize:   3,
-			expectedValue:  "bar",
-			expectedParams: map[string]string{"param1": "foo", "param2": "bar"},
-			handlerFunc: func(t *Tree) {
-				t.Add("test:@param1", "foo")
-				t.Add("test:@param1:@param2", "bar")
-			},
-		},
-		// #9
-		{
-			tree:           New("#9"),
-			str:            "test:foo:bar:baz",
-			ph:             '@',
-			delim:          ':',
-			expected:       true,
-			expectedSize:   5,
-			expectedValue:  "baz",
-			expectedParams: map[string]string{"param1": "foo", "param2": "bar", "param3": "baz"},
-			handlerFunc: func(t *Tree) {
-				t.Add("test", nil)
-				t.Add("test:@param1", "foo")
-				t.Add("test:@param1:@param2", "bar")
-				t.Add("test:@param1:@param2:@param3", "baz")
-			},
-		},
-		// #10
-		{
-			tree:           New("#10"),
-			str:            "test:foo:bar",
-			ph:             '@',
-			delim:          ':',
-			expected:       true,
-			expectedSize:   3,
-			expectedValue:  "baz",
-			expectedParams: map[string]string{"param2": "foo", "param3": "bar"},
-			handlerFunc: func(t *Tree) {
-				t.Add("test", nil)
-				t.Add("test:@param1", "foo")
-				t.Add("test:@param1:@param2", "bar")
-				t.Add("test:@param1:@param2:@param3", "baz")
-				t.Del("test:@param1")
-			},
-		},
-		// #11
-		{
-			tree:           New("#11"),
-			str:            "test:foo:bar",
-			ph:             '@',
-			delim:          ':',
-			expected:       true,
-			expectedSize:   4,
-			expectedValue:  "qux",
-			expectedParams: map[string]string{"param2": "foo", "param3": "bar"},
-			handlerFunc: func(t *Tree) {
-				t.Add("test", "foo")
-				t.Add("test:@param1", "bar")
-				t.Add("test:@param1:@param2", "baz")
-				t.Add("test:@param1:@param2:@param3", "qux")
-				t.Del("test:@param1")
-			},
-		},
-		// #12
-		{
-			tree:           New("#12"),
-			str:            "/foo/123",
-			ph:             ':',
-			delim:          '/',
-			expected:       true,
-			expectedSize:   2,
-			expectedValue:  "baz",
-			expectedParams: map[string]string{"bar": "123"},
-			handlerFunc: func(t *Tree) {
-				t.Add("/foo/:bar", "baz")
-			},
-		},
-		// #13
-		{
-			tree:         New("#13"),
-			str:          "/foo/123/456",
-			ph:           ':',
-			delim:        '/',
-			expected:     false,
-			expectedSize: 2,
-			handlerFunc: func(t *Tree) {
-				t.Add("/foo/:bar", "baz")
-			},
-		},
-		// #14
-		{
-			tree:           New("#14"),
-			str:            "abc|def",
-			ph:             '$',
-			delim:          '|',
-			expected:       true,
-			expectedSize:   2,
-			expectedValue:  "baz",
-			expectedParams: map[string]string{"foo": "abc", "bar": "def"},
-			handlerFunc: func(t *Tree) {
-				t.Add("$foo|$bar", "baz")
-			},
-		},
-		// #15
-		{
-			tree:           New("#15"),
-			str:            "abc|def",
-			ph:             '$',
-			delim:          '|',
-			expected:       true,
-			expectedSize:   3,
-			expectedValue:  "qux",
-			expectedParams: map[string]string{"foo": "abc", "baz": "def"},
-			handlerFunc: func(t *Tree) {
-				t.Add("$foo", "bar")
-				t.Add("$foo|$baz", "qux")
-			},
-		},
-		// #16
-		{
-			tree:         New("#16"),
-			str:          "/foo/123/qux",
-			ph:           ':',
-			delim:        '/',
-			expected:     false,
-			expectedSize: 2,
-			handlerFunc: func(t *Tree) {
-				t.Add("/foo/:bar/baz", "qux")
-			},
-		},
-		// #17
-		{
-			tree:           New("#17"),
-			str:            "/foo/123/456",
-			ph:             ':',
-			delim:          '/',
-			expected:       true,
-			expectedSize:   2,
-			expectedParams: map[string]string{"bar": "123", "baz": "456"},
-			handlerFunc: func(t *Tree) {
-				t.Add("/foo/:bar/:baz", nil)
-			},
-		},
-		// #18
-		{
-			tree:          New("#18"),
-			str:           "testing",
+			tree:          New("#8"),
+			str:           "test",
 			expected:      true,
-			expectedSize:  3,
+			expectedSize:  33,
 			expectedValue: "foo",
 			handlerFunc: func(t *Tree) {
-				t.Add("testing", "foo")
-				t.Add("test", nil)
-			},
-		},
-		// #19
-		{
-			tree:           New("#19"),
-			str:            "foo123",
-			ph:             '*',
-			expected:       true,
-			expectedSize:   3,
-			expectedValue:  "foo",
-			expectedParams: map[string]string{"bar": "123"},
-			handlerFunc: func(t *Tree) {
-				t.Add("foo*bar", "foo")
-				t.Add("foo", nil)
+				t.Add("test", "foo")
+				t.Add("testing", "bar")
+				t.Del("testing")
 			},
 		},
 	}
@@ -295,32 +132,43 @@ func TestNew(t *testing.T) {
 			test.handlerFunc(test.tree)
 		}
 
-		err := test.tree.Debug()
-
-		a.Nil(err, index)
 		a.Exactly(test.expectedSize, test.tree.Size(), index)
 
-		if test.ph == 0 {
-			n := test.tree.Get(test.str)
-
-			a.Exactly(test.expected, n != nil, index)
-
-			if n != nil {
-				a.Exactly(test.expectedValue, n.Value, index)
-				t.Logf("n.Value = %#v\n", n.Value)
-			}
-
-			continue
-		}
-
-		n, params := test.tree.GetByRune(test.str, test.ph, test.delim)
+		n := test.tree.Get(test.str)
 
 		a.Exactly(test.expected, n != nil, index)
-		a.Exactly(test.expectedParams, params, index)
 
 		if n != nil {
 			a.Exactly(test.expectedValue, n.Value, index)
 			t.Logf("n.Value = %#v\n", n.Value)
 		}
+	}
+}
+
+func TestRace(t *testing.T) {
+	list := []string{
+		"foo",
+		"bar",
+		"foobar",
+		"foobarbaz",
+		"qux",
+		"barbazqux",
+	}
+	tree := New("TestRace")
+	tree.Safe = true
+
+	for i, n := range list {
+		go func(i int, n string) {
+			tree.Add(n, i)
+			time.Sleep(time.Second * 3)
+		}(i, n)
+	}
+
+	for _, n := range list {
+		go func(n string) {
+			_ = tree.Get(n)
+
+			time.Sleep(time.Second * 3)
+		}(n)
 	}
 }
