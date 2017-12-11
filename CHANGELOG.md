@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Travis CI config script.
 
+### Fixed
+- `Node.IsLeaf` now returns a correct value.
+
 ### Removed
 - Travis CI script for running goimports.
 

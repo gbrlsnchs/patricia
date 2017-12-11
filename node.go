@@ -16,7 +16,7 @@ func (n *Node) Depth() int {
 
 // IsLeaf returns whether the node is a leaf.
 func (n *Node) IsLeaf() bool {
-	return len(n.edges) == 0
+	return n.edges[0] == nil && n.edges[1] == nil
 }
 
 // child returns a child of the node.
