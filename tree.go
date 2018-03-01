@@ -26,16 +26,16 @@ func New(name string) *Tree {
 
 // Add adds a new node to the tree.
 func (t *Tree) Add(s string, v interface{}) {
+	if t.Safe {
+		t.mtx.Lock()
+		defer t.mtx.Unlock()
+	}
+
 	if v == nil {
 		return
 	}
 
 	tnode := t.root
-
-	if t.Safe {
-		t.mtx.Lock()
-		defer t.mtx.Unlock()
-	}
 
 walk:
 	for i := 0; i < len(s); i++ {
@@ -76,6 +76,11 @@ walk:
 
 // Del deletes a node.
 func (t *Tree) Del(s string) {
+	if t.Safe {
+		t.mtx.Lock()
+		defer t.mtx.Unlock()
+	}
+
 	tnode := t.root
 
 	if tnode.IsLeaf() {
@@ -84,11 +89,6 @@ func (t *Tree) Del(s string) {
 
 	leaf := tnode
 	count := uint(0)
-
-	if t.Safe {
-		t.mtx.Lock()
-		defer t.mtx.Unlock()
-	}
 
 	for i := 0; i < len(s); i++ {
 		for j := uint8(8); j > 0; j-- {
@@ -124,12 +124,12 @@ func (t *Tree) Del(s string) {
 
 // Get retrieves a node.
 func (t *Tree) Get(s string) *Node {
-	tnode := t.root
-
 	if t.Safe {
 		t.mtx.RLock()
 		defer t.mtx.RUnlock()
 	}
+
+	tnode := t.root
 
 	if tnode.IsLeaf() {
 		return nil
