@@ -27,8 +27,8 @@ func New(name string) *Tree {
 // Add adds a new node to the tree.
 func (t *Tree) Add(s string, v interface{}) {
 	if t.Safe {
-		t.mtx.Lock()
 		defer t.mtx.Unlock()
+		t.mtx.Lock()
 	}
 
 	if v == nil {
@@ -77,8 +77,8 @@ walk:
 // Del deletes a node.
 func (t *Tree) Del(s string) {
 	if t.Safe {
-		t.mtx.Lock()
 		defer t.mtx.Unlock()
+		t.mtx.Lock()
 	}
 
 	tnode := t.root
@@ -125,8 +125,8 @@ func (t *Tree) Del(s string) {
 // Get retrieves a node.
 func (t *Tree) Get(s string) *Node {
 	if t.Safe {
-		t.mtx.RLock()
 		defer t.mtx.RUnlock()
+		t.mtx.RLock()
 	}
 
 	tnode := t.root
@@ -164,8 +164,8 @@ func (t *Tree) Get(s string) *Node {
 // including the root.
 func (t *Tree) Size() uint {
 	if t.Safe {
-		t.mtx.RLock()
 		defer t.mtx.RUnlock()
+		t.mtx.RLock()
 	}
 
 	return t.size + 1
