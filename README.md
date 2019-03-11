@@ -1,3 +1,6 @@
+# DEPRECATED
+A PATRICIA tree was implemented in [this other library of mine](https://github.com/gbrlsnchs/radix). Use that instead!
+
 # patricia (PATRICIA tree)
 
 [![Build Status](https://travis-ci.org/gbrlsnchs/patricia.svg?branch=master)](https://travis-ci.org/gbrlsnchs/patricia)
